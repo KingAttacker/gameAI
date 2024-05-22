@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>石头剪刀布游戏</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 50px;
+        }
+        h1 {
+            font-size: 2em;
+            margin-bottom: 20px;
+        }
+        .choices {
+            margin: 20px 0;
+        }
+        .choice {
+            cursor: pointer;
+            padding: 10px 20px;
+            margin: 0 10px;
+            border: 2px solid #000;
+            display: inline-block;
+        }
+        .result {
+            font-size: 1.5em;
+            margin-top: 20px;
+        }
+        .record {
+            margin-top: 30px;
+            font-size: 1.2em;
+        }
+    </style>
+</head>
+<body>
+    <h1>石头剪刀布游戏</h1>
+    <div class="choices">
+        <div class="choice" onclick="playGame('石头')">石头</div>
+        <div class="choice" onclick="playGame('剪刀')">剪刀</div>
+        <div class="choice" onclick="playGame('布')">布</div>
+    </div>
+    <div class="result" id="result"></div>
+    <div class="record">
+        <p>胜利: <span id="wins">0</span></p >
+        <p>失败: <span id="losses">0</span></p >
+        <p>平局: <span id="ties">0</span></p >
+    </div>
+
+    <script>
+        let wins = 0;
+        let losses = 0;
+        let ties = 0;
+        let history = [];
+        let transitionMatrix = {
+            '石头': { '石头': 1, '剪刀': 1, '布': 1 },
+            '剪刀': { '石头': 1, '剪刀': 1, '布': 1 },
+            '布': { '石头': 1, '剪刀': 1, '布': 1 }
+        };
+
+        function playGame(playerChoice) {
+            const choices = ['石头', '剪刀', '布'];
+            const computerChoice = getComputerChoice();
+
+            let result = '';
+
+            if (playerChoice === computerChoice) {
+                result = '平局！';
+                ties++;
+            } else if (
+                (playerChoice === '石头' && computerChoice === '剪刀') ||
+                (playerChoice === '剪刀' && computerChoice === '布') ||
+                (playerChoice === '布' && computerChoice === '石头')
+            ) {
+                result = '你赢了！';
+                wins++;
+            } else {
+                result = '你输了！';
+                losses++;
+            }
+
+            if (history.length > 0) {
+                transitionMatrix[history[history.length - 1]][playerChoice]++;
+            }
+
+            history.push(playerChoice);
+            document.getElementById('result').innerHTML = `你选择了 ${playerChoice}，电脑选择了 ${computerChoice}。${result}`;
+            document.getElementById('wins').innerText = wins;
+            document.getElementById('losses').innerText = losses;
+            document.getElementById('ties').innerText = ties;
+        }
+
+        function getComputerChoice() {
+            if (history.length < 1) {
+                return ['石头', '剪刀', '布'][Math.floor(Math.random() * 3)];
+            }
+
+            const lastMove = history[history.length - 1];
+            const nextMoveProbabilities = transitionMatrix[lastMove];
+            const total = nextMoveProbabilities['石头'] + nextMoveProbabilities['剪刀'] + nextMoveProbabilities['布'];
+            const rand = Math.random() * total;
+
+            let cumulative = 0;
+            for (let move in nextMoveProbabilities) {
+                cumulative += nextMoveProbabilities[move];
+                if (rand < cumulative) {
+                    return counterChoice(move);
+                }
+            }
+        }
+
+        function counterChoice(predictedChoice) {
+            if (predictedChoice === '石头') return '布';
+            if (predictedChoice === '剪刀') return '石头';
+            return '剪刀';
+        }
+    </script>
+</body>
+</html>
